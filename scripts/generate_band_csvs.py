@@ -1,39 +1,43 @@
 import pandas as pd
 import os
-from datetime import datetime
 
-# Load NSE data
+# Define the path to the source file
 source_file = "sec_list_today.csv"
+
+# Read the CSV file with the stock data
 df = pd.read_csv(source_file)
 
-# Get today's date in YYYY-MM-DD
-today = datetime.today().strftime("%Y-%m-%d")
+# Strip spaces from column names if any
+df.columns = df.columns.str.strip()
 
-# Ensure output directory exists
-output_folder = "data"
-os.makedirs(output_folder, exist_ok=True)
+# Print column names for debugging
+print("Columns in the CSV:", df.columns)
 
-# Loop through each stock
-for _, row in df.iterrows():
-    symbol = row['symbol'].strip()
-    band = row['band']
+# Ensure the 'Symbol' column exists
+if 'Symbol' not in df.columns:
+    print("Error: 'Symbol' column not found in the source CSV.")
+    exit()
 
-    # Skip missing or non-numeric bands
-    if pd.isna(band):
-        continue
+# Create the 'data' folder if it doesn't exist
+data_folder = 'data'
+if not os.path.exists(data_folder):
+    os.makedirs(data_folder)
 
-    # Output file path
-    output_file = os.path.join(output_folder, f"{symbol}.csv")
+# Iterate through each stock symbol in the dataframe
+for index, row in df.iterrows():
+    stock_symbol = row['Symbol'].strip()  # Corrected column name
+    band = row['Band']  # Assuming 'Band' column contains the price band information
+    file_name = f"{stock_symbol}.csv"
+    file_path = os.path.join(data_folder, file_name)
 
-    # Check if this file exists and today's data already added
-    if os.path.exists(output_file):
-        existing = pd.read_csv(output_file)
-        if today in existing['time'].values:
-            continue
-        new_row = pd.DataFrame([[today, band]], columns=['time', 'value'])
-        updated = pd.concat([existing, new_row])
-    else:
-        updated = pd.DataFrame([[today, band]], columns=['time', 'value'])
+    # Create a DataFrame for this stock with a sample value (for example, today's date and price band)
+    stock_data = pd.DataFrame({
+        'time': [pd.to_datetime('today').strftime('%Y-%m-%d')],
+        'value': [band]  # Use the band or any other relevant value here
+    })
 
-    # Save CSV
-    updated.to_csv(output_file, index=False)
+    # Write the stock data to a CSV file
+    stock_data.to_csv(file_path, index=False)
+    print(f"Generated: {file_path}")
+
+print("All files have been generated successfully!")
