@@ -3,7 +3,7 @@ import os
 from datetime import datetime
 
 # Load NSE data
-source_file = "sec_list_14052025.csv"
+source_file = "sec_list_today.csv"
 df = pd.read_csv(source_file)
 
 # Get today's date in YYYY-MM-DD
